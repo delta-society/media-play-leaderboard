@@ -28,7 +28,7 @@ export const MEMBERS: Member[] = [
     name: "Zoon",
     displayName: "준",
     avatar: "/avatars/zoon.png",
-    t1Channel: "blog",
+    t1Channel: "podcast",
     ghostBlogId: "re-builder",
   },
 ];
