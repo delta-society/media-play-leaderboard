@@ -7,6 +7,7 @@ interface ScoreData {
   meets_minimum: boolean;
   is_yellow_card: boolean;
   content_count: number;
+  unique_channels: number;
 }
 
 interface WeeklySummaryProps {
@@ -23,6 +24,7 @@ export default function WeeklySummary({ scores }: WeeklySummaryProps) {
   const originalMetCount = scores.filter((s) => s.original_count >= 1).length;
   const yellowCards = scores.filter((s) => s.is_yellow_card).length;
   const totalContent = scores.reduce((sum, s) => sum + s.content_count, 0);
+  const multiChannelMet = scores.filter((s) => s.unique_channels >= 2).length;
 
   const stats = [
     {
@@ -44,10 +46,10 @@ export default function WeeklySummary({ scores }: WeeklySummaryProps) {
       unit: `/ ${totalMembers}`,
     },
     {
-      label: "총 콘텐츠",
-      sub: "",
-      value: `${totalContent}`,
-      unit: "건",
+      label: "다채널 활동",
+      sub: "2+ 채널",
+      value: `${multiChannelMet}`,
+      unit: `/ ${totalMembers}`,
     },
     {
       label: "경고",

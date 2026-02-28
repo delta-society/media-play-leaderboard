@@ -20,6 +20,7 @@ interface ScoreData {
   is_yellow_card: boolean;
   content_count: number;
   raw_points: number;
+  unique_channels: number;
 }
 
 export default function MemberPage({
@@ -101,7 +102,11 @@ export default function MemberPage({
     0
   );
   const originalRate = totalContent > 0 ? totalOriginals / totalContent : 0;
-  const grade = getGrade(weeklyAvg, fulfillmentRate, originalRate);
+  const avgChannels =
+    totalWeeks > 0
+      ? history.reduce((sum, h) => sum + h.unique_channels, 0) / totalWeeks
+      : 0;
+  const grade = getGrade(weeklyAvg, fulfillmentRate, originalRate, avgChannels);
 
   const GRADE_COLORS: Record<string, string> = {
     S: "text-[#C0F0FB] border-[#C0F0FB]",
@@ -159,6 +164,7 @@ export default function MemberPage({
                 },
                 { label: "콘텐츠", value: `${score.content_count}건` },
                 { label: "원본", value: `${score.original_count}건` },
+                { label: "채널", value: `${score.unique_channels}개` },
                 {
                   label: "기준 달성",
                   value: score.meets_minimum ? "달성" : "미달",
@@ -247,7 +253,10 @@ export default function MemberPage({
                 label: "원본 비율",
                 value: `${(originalRate * 100).toFixed(0)}%`,
               },
-              { label: "트래킹 주", value: `${totalWeeks}주` },
+              {
+                label: "평균 채널",
+                value: `${avgChannels.toFixed(1)}개`,
+              },
             ].map((stat) => (
               <div
                 key={stat.label}

@@ -89,10 +89,12 @@ export function calculateWeeklyScore(items: ContentItem[]): {
   meets_minimum: boolean;
   is_yellow_card: boolean;
   raw_points: number;
+  unique_channels: number;
 } {
   let shortPoints = 0;
   let otherPoints = 0;
   let originalCount = 0;
+  const channels = new Set<string>();
 
   for (const item of items) {
     if (SHORT_TYPES.includes(item.content_type)) {
@@ -103,6 +105,7 @@ export function calculateWeeklyScore(items: ContentItem[]): {
     if (isOriginal(item.content_type)) {
       originalCount++;
     }
+    channels.add(item.channel);
   }
 
   // Apply short content cap (max 5pt from short posts per week)
@@ -116,21 +119,23 @@ export function calculateWeeklyScore(items: ContentItem[]): {
     meets_minimum: totalPoints >= WEEKLY_MINIMUM,
     is_yellow_card: totalPoints < YELLOW_CARD_THRESHOLD,
     raw_points: rawPoints,
+    unique_channels: channels.size,
   };
 }
 
 export function getGrade(
   weeklyAvg: number,
   fulfillmentRate: number,
-  originalRate: number
+  originalRate: number,
+  avgChannels: number = 0
 ): "S" | "A" | "B" | "C" | "D" {
-  if (fulfillmentRate >= 0.95 && weeklyAvg >= 25 && originalRate >= 0.4)
+  if (fulfillmentRate >= 0.95 && weeklyAvg >= 25 && originalRate >= 0.4 && avgChannels >= 3)
     return "S";
-  if (fulfillmentRate >= 0.85 && weeklyAvg >= 20 && originalRate >= 0.35)
+  if (fulfillmentRate >= 0.85 && weeklyAvg >= 20 && originalRate >= 0.35 && avgChannels >= 3)
     return "A";
-  if (fulfillmentRate >= 0.75 && weeklyAvg >= 15 && originalRate >= 0.3)
+  if (fulfillmentRate >= 0.75 && weeklyAvg >= 15 && originalRate >= 0.3 && avgChannels >= 2)
     return "B";
-  if (fulfillmentRate >= 0.6 && weeklyAvg >= 12 && originalRate >= 0.2)
+  if (fulfillmentRate >= 0.6 && weeklyAvg >= 12 && originalRate >= 0.2 && avgChannels >= 2)
     return "C";
   return "D";
 }

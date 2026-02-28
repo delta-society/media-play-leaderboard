@@ -10,6 +10,7 @@ interface MemberCardProps {
   meetsMinimum: boolean;
   isYellowCard: boolean;
   contentCount: number;
+  uniqueChannels: number;
 }
 
 const RANK_CONFIG: Record<
@@ -56,6 +57,7 @@ export default function MemberCard({
   meetsMinimum,
   isYellowCard,
   contentCount,
+  uniqueChannels,
 }: MemberCardProps) {
   const member = getMember(memberId);
   if (!member) return null;
@@ -137,6 +139,16 @@ export default function MemberCard({
               }`}
             >
               {originalCount}/1건
+            </span>
+          </span>
+          <span className="text-[#78716C]">
+            채널{" "}
+            <span
+              className={`font-medium ${
+                uniqueChannels >= 2 ? "text-[#44403C]" : "text-red-500"
+              }`}
+            >
+              {uniqueChannels}개
             </span>
           </span>
         </div>

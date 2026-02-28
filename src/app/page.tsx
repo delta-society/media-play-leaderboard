@@ -16,6 +16,7 @@ interface ScoreData {
   is_yellow_card: boolean;
   content_count: number;
   raw_points: number;
+  unique_channels: number;
 }
 
 export default function Home() {
@@ -96,6 +97,7 @@ export default function Home() {
                 meetsMinimum={score.meets_minimum}
                 isYellowCard={score.is_yellow_card}
                 contentCount={score.content_count}
+                uniqueChannels={score.unique_channels}
               />
             ))}
           </div>
