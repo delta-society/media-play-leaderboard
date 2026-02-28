@@ -22,14 +22,14 @@ export const MEMBERS: Member[] = [
     displayName: "웅",
     avatar: "/avatars/woong.png",
     t1Channel: "blog",
-    ghostBlogId: "re-builder",
   },
   {
     id: "zoon",
     name: "Zoon",
     displayName: "준",
     avatar: "/avatars/zoon.png",
-    t1Channel: "podcast",
+    t1Channel: "blog",
+    ghostBlogId: "re-builder",
   },
 ];
 

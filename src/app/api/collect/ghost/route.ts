@@ -22,7 +22,7 @@ function estimateContentType(
 
 function getMemberByBlogId(blogId: string): string | undefined {
   const blogMapping: Record<string, string> = {
-    "re-builder": "woong",
+    "re-builder": "zoon",
     thefuturemundane: "sung",
   };
   return blogMapping[blogId];
