@@ -13,9 +13,13 @@ import {
 export default function AddContentPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [analyzed, setAnalyzed] = useState(false);
+  const [analysisInfo, setAnalysisInfo] = useState<string | null>(null);
 
+  const [urlInput, setUrlInput] = useState("");
   const [form, setForm] = useState({
     member: "",
     title: "",
@@ -24,6 +28,48 @@ export default function AddContentPage() {
     content_type: "" as ContentType | "",
     published_at: new Date().toISOString().split("T")[0],
   });
+
+  async function handleAnalyze() {
+    if (!urlInput.trim()) return;
+    setError(null);
+    setAnalyzing(true);
+    setAnalyzed(false);
+    setAnalysisInfo(null);
+
+    try {
+      const res = await fetch("/api/analyze-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlInput.trim() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "분석 실패");
+      }
+
+      const data = await res.json();
+
+      setForm({
+        ...form,
+        url: urlInput.trim(),
+        title: data.title || form.title,
+        channel: data.channel || form.channel,
+        content_type: data.content_type || form.content_type,
+      });
+
+      setAnalyzed(true);
+
+      // Build info string
+      const parts = [];
+      parts.push(`${data.charCount.toLocaleString()}자`);
+      if (data.isVideo) parts.push("영상");
+      setAnalysisInfo(parts.join(" · "));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "분석 실패");
+    }
+    setAnalyzing(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,6 +116,48 @@ export default function AddContentPage() {
         콘텐츠 추가
       </h1>
 
+      {/* URL Auto-Analyze */}
+      <div className="mb-6 p-4 rounded-xl bg-[#F9F7F4] border border-[#E7E5E4]">
+        <label className="block text-sm font-medium text-[#44403C] mb-2">
+          링크로 자동 분석
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAnalyze();
+              }
+            }}
+            placeholder="URL을 붙여넣으세요"
+            className="flex-1 px-3 py-2 rounded-lg border border-[#E7E5E4] bg-white text-sm
+                       focus:outline-none focus:ring-2 focus:ring-[#C0F0FB]"
+          />
+          <button
+            type="button"
+            onClick={handleAnalyze}
+            disabled={analyzing || !urlInput.trim()}
+            className="px-4 py-2 rounded-lg bg-[#1C1917] text-white text-sm font-medium
+                       hover:bg-[#44403C] transition-colors disabled:opacity-50 shrink-0"
+          >
+            {analyzing ? "분석중..." : "분석"}
+          </button>
+        </div>
+        {analyzed && analysisInfo && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold">
+              AUTO
+            </span>
+            <span className="text-xs text-[#78716C]">
+              {analysisInfo} — 아래에서 확인 후 제출하세요
+            </span>
+          </div>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Member */}
         <div>
@@ -108,7 +196,7 @@ export default function AddContentPage() {
           />
         </div>
 
-        {/* URL */}
+        {/* URL (hidden if auto-analyzed, shown otherwise) */}
         <div>
           <label className="block text-sm font-medium text-[#44403C] mb-1">
             URL
