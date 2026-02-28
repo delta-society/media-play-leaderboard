@@ -50,8 +50,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
     console.error("Failed to add content:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to add content" },
+      { error: `Failed to add content: ${message}` },
       { status: 500 }
     );
   }
