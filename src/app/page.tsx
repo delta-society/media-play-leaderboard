@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import MemberCard from "@/components/MemberCard";
 import ContentTable from "@/components/ContentTable";
 import WeekPicker from "@/components/WeekPicker";
-import WeeklySummary from "@/components/WeeklySummary";
 import { getCurrentWeek, type ContentItem } from "@/lib/scoring";
 
 interface ScoreData {
@@ -52,11 +51,12 @@ export default function Home() {
   }, [week]);
 
   const allMet = scores.length > 0 && scores.every((s) => s.meets_minimum);
+  const metCount = scores.filter((s) => s.meets_minimum).length;
   const totalPoints = scores.reduce((sum, s) => sum + s.total_points, 0);
 
   return (
     <div className="space-y-6">
-      {/* Hero header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-[#1C1917] font-heading tracking-tight">
@@ -85,8 +85,8 @@ export default function Home() {
         </div>
       ) : (
         <>
-          {/* Podium cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Member list */}
+          <div className="space-y-2">
             {scores.map((score, idx) => (
               <MemberCard
                 key={score.member}
@@ -102,46 +102,40 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Team stats */}
-          <div>
-            <h2 className="text-xs font-bold text-[#78716C] uppercase tracking-wider mb-3 font-heading">
-              Team Summary
-            </h2>
-            <WeeklySummary scores={scores} />
+          {/* Team summary — single line */}
+          <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-[#1C1917] text-white">
+            <div className="flex items-center gap-6 text-sm">
+              <span>
+                <span className="text-[#A8A29E] text-xs mr-1.5">달성</span>
+                <span className="font-bold font-heading">{metCount}</span>
+                <span className="text-[#A8A29E] text-xs">/{scores.length}</span>
+              </span>
+              <span>
+                <span className="text-[#A8A29E] text-xs mr-1.5">팀 합계</span>
+                <span className="font-bold font-heading">{totalPoints}</span>
+                <span className="text-[#A8A29E] text-xs ml-0.5">pt</span>
+              </span>
+            </div>
+            {allMet && (
+              <span className="text-[10px] font-bold text-emerald-400 tracking-wider">
+                ALL CLEAR
+              </span>
+            )}
           </div>
 
           {/* Content feed */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-[#1C1917] font-heading">
-                  콘텐츠 피드
-                </h2>
-                <span className="px-2 py-0.5 rounded-full bg-[#1C1917] text-white text-[10px] font-bold">
-                  {content.length}
-                </span>
-              </div>
-              <a
-                href="/add"
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#C0F0FB] to-[#7DD3FC] text-[#1C1917] text-sm font-semibold
-                           hover:from-[#FFEA00] hover:to-[#FCD34D] transition-all shadow-sm"
-              >
-                + 콘텐츠 추가
-              </a>
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-lg font-semibold text-[#1C1917] font-heading">
+                콘텐츠 피드
+              </h2>
+              <span className="px-2 py-0.5 rounded-full bg-[#1C1917] text-white text-[10px] font-bold">
+                {content.length}
+              </span>
             </div>
             <div className="bg-white rounded-2xl border border-[#E7E5E4] p-4 shadow-sm">
               <ContentTable items={content} />
             </div>
-          </div>
-
-          {/* Total team points */}
-          <div className="text-center py-4">
-            <p className="text-xs text-[#78716C] mb-1">이번 주 팀 합계</p>
-            <p className="text-4xl font-bold font-heading text-[#1C1917]">
-              {totalPoints}
-              <span className="text-lg text-[#78716C] font-normal">pt</span>
-            </p>
-            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#C0F0FB] to-transparent mx-auto mt-2" />
           </div>
         </>
       )}
