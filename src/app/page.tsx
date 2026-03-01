@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import MemberCard from "@/components/MemberCard";
 import ContentTable from "@/components/ContentTable";
 import WeekPicker from "@/components/WeekPicker";
-import { getCurrentWeek, getElapsedDays, type ContentItem } from "@/lib/scoring";
+import { getCurrentWeek, getElapsedDays, TOPIC_LABELS, type ContentItem, type Topic } from "@/lib/scoring";
 
 interface ScoreData {
   member: string;
@@ -60,6 +60,18 @@ export default function Home() {
   const allMet = scores.length > 0 && scores.every((s) => s.meets_minimum);
   const metCount = scores.filter((s) => s.meets_minimum).length;
   const totalPoints = scores.reduce((sum, s) => sum + s.total_points, 0);
+
+  // Topic coverage: count from published content + pipeline
+  const allItems = [...content, ...pipeline];
+  const topicCounts: Record<Topic, number> = {
+    ai_tech: 0, mgmt_org: 0, invest_capital: 0,
+    building: 0, philosophy: 0, culture: 0,
+  };
+  for (const item of allItems) {
+    if (item.topic) topicCounts[item.topic]++;
+  }
+  const coveredTopics = Object.values(topicCounts).filter((c) => c > 0).length;
+  const totalTopics = Object.keys(topicCounts).length;
 
   return (
     <div className="space-y-6">
@@ -171,6 +183,40 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Topic coverage */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-lg font-semibold text-[#1C1917] font-heading">
+                토픽 커버리지
+              </h2>
+              <span className="px-2 py-0.5 rounded-full bg-[#1C1917] text-white text-[10px] font-bold">
+                {coveredTopics}/{totalTopics}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {(Object.entries(TOPIC_LABELS) as [Topic, string][]).map(([key, label]) => {
+                const count = topicCounts[key];
+                return (
+                  <div
+                    key={key}
+                    className={`px-3 py-2.5 rounded-xl text-center transition-colors ${
+                      count > 0
+                        ? "bg-[#C0F0FB]/30 border border-[#C0F0FB]"
+                        : "bg-[#F5F5F4] border border-[#E7E5E4]"
+                    }`}
+                  >
+                    <div className={`text-xs font-medium ${count > 0 ? "text-[#1C1917]" : "text-[#A8A29E]"}`}>
+                      {label}
+                    </div>
+                    <div className={`text-lg font-bold font-heading mt-0.5 ${count > 0 ? "text-[#1C1917]" : "text-[#D6D3D1]"}`}>
+                      {count}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Content feed */}
           <div>

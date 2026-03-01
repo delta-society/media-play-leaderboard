@@ -14,6 +14,23 @@ export type Channel =
   | "youtube"
   | "other";
 
+export type Topic =
+  | "ai_tech"
+  | "mgmt_org"
+  | "invest_capital"
+  | "building"
+  | "philosophy"
+  | "culture";
+
+export const TOPIC_LABELS: Record<Topic, string> = {
+  ai_tech: "AI/기술",
+  mgmt_org: "경영/조직",
+  invest_capital: "투자/자본",
+  building: "빌딩/실행",
+  philosophy: "철학/사유",
+  culture: "문화/커뮤니티",
+};
+
 export const POINTS_MAP: Record<ContentType, number> = {
   original_long: 5,
   original_video: 5,
@@ -66,6 +83,7 @@ export interface ContentItem {
   ghost_id?: string;
   is_original: boolean;
   status: ContentStatus;
+  topic?: Topic;
 }
 
 export interface WeeklyScore {

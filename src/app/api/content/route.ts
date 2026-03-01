@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { member, title, url, channel, content_type, published_at, status } = body;
+    const { member, title, url, channel, content_type, published_at, status, topic } = body;
 
     const contentStatus = status || "published";
 
@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
       published_at: published_at || new Date().toISOString().split("T")[0],
       source: "manual_web",
       status: contentStatus,
+      topic: topic || undefined,
     });
 
     return NextResponse.json({ item }, { status: 201 });
