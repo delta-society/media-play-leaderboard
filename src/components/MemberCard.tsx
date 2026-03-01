@@ -16,9 +16,9 @@ interface MemberCardProps {
 }
 
 function getLevel(points: number): { name: string; color: string } {
-  if (points >= 30) return { name: "ON FIRE", color: "text-red-500" };
-  if (points >= 25) return { name: "BEAST", color: "text-purple-500" };
-  if (points >= 20) return { name: "SOLID", color: "text-blue-500" };
+  if (points >= 23) return { name: "ON FIRE", color: "text-red-500" };
+  if (points >= 20) return { name: "BEAST", color: "text-purple-500" };
+  if (points >= 17) return { name: "SOLID", color: "text-blue-500" };
   if (points >= 15) return { name: "CLEAR", color: "text-emerald-500" };
   if (points >= 10) return { name: "ALMOST", color: "text-yellow-600" };
   return { name: "DANGER", color: "text-red-500" };
