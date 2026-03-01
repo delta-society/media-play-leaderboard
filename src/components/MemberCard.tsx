@@ -85,7 +85,7 @@ export default function MemberCard({
               {member.displayName}
             </h3>
             <p className="text-[11px] text-[#78716C]">
-              @{member.id} · {member.t1Channel}
+              @{member.id} · {member.teams.join(" · ")}
             </p>
           </div>
         </div>

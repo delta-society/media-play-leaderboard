@@ -134,7 +134,7 @@ export default function MemberPage({
               {member.displayName}
             </h1>
             <p className="text-sm text-[#78716C]">
-              @{member.id} · T1: {member.t1Channel}
+              @{member.id} · {member.teams.join(" · ")} · T1: {member.t1Channel}
             </p>
           </div>
         </div>

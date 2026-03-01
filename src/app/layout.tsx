@@ -8,7 +8,7 @@ const fontLinks = [
 ];
 
 export const metadata: Metadata = {
-  title: "Media Play | Delta Society",
+  title: "Media Play | Man-of Group",
   description: "주간 콘텐츠 포인트 트래킹 대시보드",
 };
 
@@ -37,7 +37,7 @@ export default function RootLayout({
                   Media Play
                 </span>
                 <span className="text-[10px] text-[#78716C] ml-2 hidden sm:inline">
-                  Delta Society
+                  Man-of Group
                 </span>
               </div>
             </a>
@@ -65,8 +65,8 @@ export default function RootLayout({
         {/* Footer */}
         <footer className="bg-[#1C1917] text-[#78716C] text-xs py-6 mt-12 border-t border-white/5">
           <div className="max-w-5xl mx-auto px-4 text-center space-y-1">
-            <p className="font-heading text-white/30">Delta Society</p>
-            <p>Media Play Tracker — Where Outliers Connect & Build</p>
+            <p className="font-heading text-white/30">Man-of Group</p>
+            <p>Media Play Tracker</p>
           </div>
         </footer>
       </body>
