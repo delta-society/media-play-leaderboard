@@ -22,15 +22,17 @@ export default function Home() {
   const [week, setWeek] = useState(getCurrentWeek());
   const [scores, setScores] = useState<ScoreData[]>([]);
   const [content, setContent] = useState<ContentItem[]>([]);
+  const [pipeline, setPipeline] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
-        const [scoresRes, contentRes] = await Promise.all([
+        const [scoresRes, contentRes, pipelineRes] = await Promise.all([
           fetch(`/api/scores?week=${week}`),
           fetch(`/api/content?week=${week}`),
+          fetch(`/api/pipeline`),
         ]);
 
         if (scoresRes.ok) {
@@ -40,6 +42,10 @@ export default function Home() {
         if (contentRes.ok) {
           const data = await contentRes.json();
           setContent(data.items);
+        }
+        if (pipelineRes.ok) {
+          const data = await pipelineRes.json();
+          setPipeline(data.items);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -124,6 +130,47 @@ export default function Home() {
               </span>
             )}
           </div>
+
+          {/* Pipeline */}
+          {pipeline.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <h2 className="text-lg font-semibold text-[#1C1917] font-heading">
+                  파이프라인
+                </h2>
+                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
+                  {pipeline.length}
+                </span>
+              </div>
+              <div className="bg-white rounded-2xl border border-[#E7E5E4] p-4 shadow-sm space-y-2">
+                {pipeline.map((item) => {
+                  const statusConfig = item.status === "writing"
+                    ? { label: "작성중", color: "bg-blue-100 text-blue-700" }
+                    : { label: "소재", color: "bg-amber-100 text-amber-700" };
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F9F7F4] transition-colors"
+                    >
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${statusConfig.color}`}
+                      >
+                        {statusConfig.label}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm text-[#1C1917] truncate block font-medium">
+                          {item.title}
+                        </span>
+                        <span className="text-xs text-[#78716C]">
+                          {item.member}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Content feed */}
           <div>

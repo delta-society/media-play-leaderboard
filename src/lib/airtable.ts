@@ -1,6 +1,7 @@
 import Airtable from "airtable";
 import {
   type ContentItem,
+  type ContentStatus,
   type WeeklyScore,
   type ContentType,
   type Channel,
@@ -40,6 +41,7 @@ function recordToContent(record: Airtable.Record<Airtable.FieldSet>): ContentIte
     source: record.get("source") as ContentItem["source"],
     ghost_id: (record.get("ghost_id") as string) || undefined,
     is_original: (record.get("is_original") as boolean) || false,
+    status: (record.get("status") as ContentStatus) || "published",
   };
 }
 
@@ -66,7 +68,7 @@ export async function getContentByDateRange(
   endDate: string,
   member?: string
 ): Promise<ContentItem[]> {
-  let formula = `AND(IS_AFTER({published_at}, '${startDate}'), IS_BEFORE({published_at}, '${endDate}'))`;
+  let formula = `AND(IS_AFTER({published_at}, '${startDate}'), IS_BEFORE({published_at}, '${endDate}'), OR({status}='published', {status}=BLANK()))`;
   if (member) {
     formula = `AND(${formula}, {member}='${member}')`;
   }
@@ -84,8 +86,9 @@ export async function getContentByDateRange(
 export async function addContent(
   data: Omit<ContentItem, "id" | "points" | "is_original">
 ): Promise<ContentItem> {
-  const points = getPoints(data.content_type);
-  const is_original_flag = isOriginal(data.content_type);
+  const status = data.status || "published";
+  const points = status === "published" ? getPoints(data.content_type) : 0;
+  const is_original_flag = status === "published" ? isOriginal(data.content_type) : false;
 
   const record = await contentTable().create({
     member: data.member,
@@ -98,9 +101,21 @@ export async function addContent(
     source: data.source,
     ghost_id: data.ghost_id || "",
     is_original: is_original_flag,
+    status,
   });
 
   return recordToContent(record);
+}
+
+export async function getPipeline(): Promise<ContentItem[]> {
+  const records = await contentTable()
+    .select({
+      filterByFormula: `OR({status}='idea', {status}='writing')`,
+      sort: [{ field: "published_at", direction: "desc" }],
+    })
+    .all();
+
+  return records.map(recordToContent);
 }
 
 export async function checkGhostIdExists(ghostId: string): Promise<boolean> {

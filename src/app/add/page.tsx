@@ -8,6 +8,7 @@ import {
   CHANNEL_LABELS,
   type ContentType,
   type Channel,
+  type ContentStatus,
 } from "@/lib/scoring";
 
 export default function AddContentPage() {
@@ -27,7 +28,10 @@ export default function AddContentPage() {
     channel: "" as Channel | "",
     content_type: "" as ContentType | "",
     published_at: new Date().toISOString().split("T")[0],
+    status: "published" as ContentStatus,
   });
+
+  const isPublished = form.status === "published";
 
   async function handleAnalyze() {
     if (!urlInput.trim()) return;
@@ -103,7 +107,7 @@ export default function AddContentPage() {
       <div className="max-w-lg mx-auto py-20 text-center">
         <div className="text-4xl mb-4">&#10003;</div>
         <h2 className="text-xl font-semibold text-[#1C1917] font-heading mb-2">
-          콘텐츠가 추가되었습니다
+          {isPublished ? "콘텐츠가 추가되었습니다" : "파이프라인에 등록되었습니다"}
         </h2>
         <p className="text-sm text-[#78716C]">리더보드로 이동 중...</p>
       </div>
@@ -159,6 +163,28 @@ export default function AddContentPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Status tabs */}
+        <div className="flex gap-1 p-1 rounded-lg bg-[#F5F5F4]">
+          {([
+            { value: "published", label: "발행 완료" },
+            { value: "writing", label: "작성중" },
+            { value: "idea", label: "소재" },
+          ] as { value: ContentStatus; label: string }[]).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setForm({ ...form, status: opt.value })}
+              className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                form.status === opt.value
+                  ? "bg-white text-[#1C1917] shadow-sm"
+                  : "text-[#78716C] hover:text-[#44403C]"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
         {/* Member */}
         <div>
           <label className="block text-sm font-medium text-[#44403C] mb-1">
@@ -214,10 +240,10 @@ export default function AddContentPage() {
         {/* Channel */}
         <div>
           <label className="block text-sm font-medium text-[#44403C] mb-1">
-            채널 *
+            채널 {isPublished && "*"}
           </label>
           <select
-            required
+            required={isPublished}
             value={form.channel}
             onChange={(e) =>
               setForm({ ...form, channel: e.target.value as Channel })
@@ -239,10 +265,10 @@ export default function AddContentPage() {
         {/* Content Type */}
         <div>
           <label className="block text-sm font-medium text-[#44403C] mb-1">
-            콘텐츠 유형 *
+            콘텐츠 유형 {isPublished && "*"}
           </label>
           <select
-            required
+            required={isPublished}
             value={form.content_type}
             onChange={(e) =>
               setForm({
@@ -267,10 +293,10 @@ export default function AddContentPage() {
         {/* Published Date */}
         <div>
           <label className="block text-sm font-medium text-[#44403C] mb-1">
-            발행일 *
+            {isPublished ? "발행일 *" : "예정일"}
           </label>
           <input
-            required
+            required={isPublished}
             type="date"
             value={form.published_at}
             onChange={(e) =>
@@ -296,7 +322,13 @@ export default function AddContentPage() {
             className="flex-1 px-4 py-2.5 rounded-lg bg-[#C0F0FB] text-[#1C1917] font-medium text-sm
                        hover:bg-[#FFEA00] transition-colors disabled:opacity-50"
           >
-            {submitting ? "추가 중..." : "콘텐츠 추가"}
+            {submitting
+              ? "추가 중..."
+              : isPublished
+                ? "콘텐츠 추가"
+                : form.status === "writing"
+                  ? "작성중 등록"
+                  : "소재 등록"}
           </button>
           <a
             href="/"

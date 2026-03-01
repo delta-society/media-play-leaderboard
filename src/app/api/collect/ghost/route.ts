@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
           published_at: post.published_at,
           source: "ghost_auto",
           ghost_id: post.id,
+          status: "published",
         });
 
         added++;

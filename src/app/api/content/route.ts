@@ -28,23 +28,36 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { member, title, url, channel, content_type, published_at } = body;
+    const { member, title, url, channel, content_type, published_at, status } = body;
 
-    if (!member || !title || !channel || !content_type || !published_at) {
-      return NextResponse.json(
-        { error: "Missing required fields: member, title, channel, content_type, published_at" },
-        { status: 400 }
-      );
+    const contentStatus = status || "published";
+
+    // idea/writing은 채널과 유형이 선택사항
+    if (contentStatus === "published") {
+      if (!member || !title || !channel || !content_type || !published_at) {
+        return NextResponse.json(
+          { error: "Missing required fields: member, title, channel, content_type, published_at" },
+          { status: 400 }
+        );
+      }
+    } else {
+      if (!member || !title) {
+        return NextResponse.json(
+          { error: "Missing required fields: member, title" },
+          { status: 400 }
+        );
+      }
     }
 
     const item = await addContent({
       member,
       title,
       url: url || "",
-      channel: channel as Channel,
-      content_type: content_type as ContentType,
-      published_at,
+      channel: (channel || "other") as Channel,
+      content_type: (content_type || "original_long") as ContentType,
+      published_at: published_at || new Date().toISOString().split("T")[0],
       source: "manual_web",
+      status: contentStatus,
     });
 
     return NextResponse.json({ item }, { status: 201 });
