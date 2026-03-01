@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import MemberCard from "@/components/MemberCard";
 import ContentTable from "@/components/ContentTable";
 import WeekPicker from "@/components/WeekPicker";
-import { getCurrentWeek, type ContentItem } from "@/lib/scoring";
+import { getCurrentWeek, getElapsedDays, type ContentItem } from "@/lib/scoring";
 
 interface ScoreData {
   member: string;
@@ -50,6 +50,7 @@ export default function Home() {
     fetchData();
   }, [week]);
 
+  const elapsed = getElapsedDays(week);
   const allMet = scores.length > 0 && scores.every((s) => s.meets_minimum);
   const metCount = scores.filter((s) => s.meets_minimum).length;
   const totalPoints = scores.reduce((sum, s) => sum + s.total_points, 0);
@@ -98,6 +99,7 @@ export default function Home() {
                 isYellowCard={score.is_yellow_card}
                 contentCount={score.content_count}
                 uniqueChannels={score.unique_channels}
+                elapsedDays={elapsed}
               />
             ))}
           </div>

@@ -181,6 +181,34 @@ export function getCurrentWeek(): string {
   return getWeekString(new Date());
 }
 
+/**
+ * 현재 주의 경과 일수 (월=1, 화=2, ... 일=7)
+ * 과거 주는 7 반환 (완료)
+ */
+export function getElapsedDays(weekString: string): number {
+  const current = getCurrentWeek();
+  if (weekString !== current) return 7; // 과거 주 = 완료
+
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 1=Mon, ...
+  return day === 0 ? 7 : day; // ISO: Mon=1, Sun=7
+}
+
+/**
+ * 현재 포인트 기반 주간 예상 총점
+ * - 과거 주: actual 그대로
+ * - 현재 주: (points / elapsedDays) * 7
+ * - 활동 없으면 0
+ */
+export function getProjectedPoints(
+  totalPoints: number,
+  elapsedDays: number
+): number {
+  if (elapsedDays >= 7) return totalPoints; // 완료된 주
+  if (totalPoints === 0) return 0;
+  return Math.round((totalPoints / elapsedDays) * 7);
+}
+
 export function getRecentWeeks(count: number): string[] {
   const weeks: string[] = [];
   const now = new Date();
