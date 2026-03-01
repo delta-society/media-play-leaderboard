@@ -43,7 +43,12 @@ function recordToContent(record: Airtable.Record<Airtable.FieldSet>): ContentIte
     ghost_id: (record.get("ghost_id") as string) || undefined,
     is_original: (record.get("is_original") as boolean) || false,
     status: (record.get("status") as ContentStatus) || "published",
-    topic: (record.get("topic") as Topic) || undefined,
+    topic: (() => {
+      const raw = record.get("topic");
+      if (!raw) return undefined;
+      if (Array.isArray(raw)) return raw as Topic[];
+      return [raw] as Topic[];
+    })(),
   };
 }
 
@@ -86,7 +91,7 @@ export async function getContentByDateRange(
 }
 
 export async function addContent(
-  data: Omit<ContentItem, "id" | "points" | "is_original" | "topic"> & { topic?: Topic }
+  data: Omit<ContentItem, "id" | "points" | "is_original" | "topic"> & { topic?: Topic[] }
 ): Promise<ContentItem> {
   const status = data.status || "published";
   const points = status === "published" ? getPoints(data.content_type) : 0;
@@ -104,7 +109,7 @@ export async function addContent(
     ghost_id: data.ghost_id || "",
     is_original: is_original_flag,
     status,
-    ...(data.topic ? { topic: data.topic } : {}),
+    ...(data.topic && data.topic.length > 0 ? { topic: data.topic } : {}),
   });
 
   return recordToContent(record);

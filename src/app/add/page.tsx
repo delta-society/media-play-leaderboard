@@ -6,9 +6,11 @@ import { MEMBERS } from "@/lib/members";
 import {
   CONTENT_TYPE_LABELS,
   CHANNEL_LABELS,
+  TOPIC_LABELS,
   type ContentType,
   type Channel,
   type ContentStatus,
+  type Topic,
 } from "@/lib/scoring";
 
 export default function AddContentPage() {
@@ -29,6 +31,7 @@ export default function AddContentPage() {
     content_type: "" as ContentType | "",
     published_at: new Date().toISOString().split("T")[0],
     status: "published" as ContentStatus,
+    topic: [] as Topic[],
   });
 
   const isPublished = form.status === "published";
@@ -305,6 +308,39 @@ export default function AddContentPage() {
             className="w-full px-3 py-2 rounded-lg border border-[#E7E5E4] bg-white text-sm
                        focus:outline-none focus:ring-2 focus:ring-[#C0F0FB]"
           />
+        </div>
+
+        {/* Topic */}
+        <div>
+          <label className="block text-sm font-medium text-[#44403C] mb-2">
+            토픽 (복수 선택 가능)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {(Object.entries(TOPIC_LABELS) as [Topic, string][]).map(([key, label]) => {
+              const selected = form.topic.includes(key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    setForm({
+                      ...form,
+                      topic: selected
+                        ? form.topic.filter((t) => t !== key)
+                        : [...form.topic, key],
+                    });
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    selected
+                      ? "bg-[#1C1917] text-white"
+                      : "bg-[#F5F5F4] text-[#78716C] hover:bg-[#E7E5E4]"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Error */}

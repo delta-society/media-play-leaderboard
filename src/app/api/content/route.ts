@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       published_at: published_at || new Date().toISOString().split("T")[0],
       source: "manual_web",
       status: contentStatus,
-      topic: topic || undefined,
+      topic: Array.isArray(topic) ? topic : topic ? [topic] : undefined,
     });
 
     return NextResponse.json({ item }, { status: 201 });

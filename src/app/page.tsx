@@ -68,7 +68,9 @@ export default function Home() {
     building: 0, philosophy: 0, culture: 0,
   };
   for (const item of allItems) {
-    if (item.topic) topicCounts[item.topic]++;
+    if (item.topic) {
+      for (const t of item.topic) topicCounts[t]++;
+    }
   }
   const coveredTopics = Object.values(topicCounts).filter((c) => c > 0).length;
   const totalTopics = Object.keys(topicCounts).length;

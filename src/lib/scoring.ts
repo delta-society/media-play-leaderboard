@@ -83,7 +83,7 @@ export interface ContentItem {
   ghost_id?: string;
   is_original: boolean;
   status: ContentStatus;
-  topic?: Topic;
+  topic?: Topic[];
 }
 
 export interface WeeklyScore {
