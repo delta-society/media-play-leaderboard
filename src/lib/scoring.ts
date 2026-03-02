@@ -3,7 +3,6 @@ export type ContentType =
   | "original_video"
   | "original_mid"
   | "short_video"
-  | "derivative"
   | "short";
 
 export type Channel =
@@ -36,7 +35,6 @@ export const POINTS_MAP: Record<ContentType, number> = {
   original_video: 5,
   original_mid: 3,
   short_video: 2,
-  derivative: 1,
   short: 1,
 };
 
@@ -45,7 +43,6 @@ export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   original_video: "원본 영상 (5pt)",
   original_mid: "원본 중문 (3pt)",
   short_video: "숏폼 영상 (2pt)",
-  derivative: "파생 콘텐츠 (1pt)",
   short: "단문 (1pt)",
 };
 

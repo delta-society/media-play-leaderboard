@@ -78,8 +78,7 @@ function detectContentType(charCount: number, isVideo: boolean, channel: Channel
   if (channel === "x") return "short"; // X posts are always short
 
   if (charCount >= 2000) return "original_long";
-  if (charCount >= 800) return "original_mid";
-  if (charCount >= 300) return "derivative";
+  if (charCount >= 300) return "original_mid";
   return "short";
 }
 
