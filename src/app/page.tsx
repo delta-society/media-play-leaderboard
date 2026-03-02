@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import MemberCard from "@/components/MemberCard";
 import ContentTable from "@/components/ContentTable";
 import WeekPicker from "@/components/WeekPicker";
-import { getCurrentWeek, getElapsedDays, TOPIC_LABELS, type ContentItem, type Topic } from "@/lib/scoring";
+import { getCurrentWeek, getElapsedDays, TOPIC_LABELS, CHANNEL_LABELS, CONTENT_TYPE_LABELS, type ContentItem, type Topic, type Channel, type ContentType } from "@/lib/scoring";
 
 interface ScoreData {
   member: string;
@@ -24,6 +24,8 @@ export default function Home() {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [pipeline, setPipeline] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pipelineExpanded, setPipelineExpanded] = useState(false);
+  const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchData() {
@@ -60,6 +62,33 @@ export default function Home() {
   const allMet = scores.length > 0 && scores.every((s) => s.meets_minimum);
   const metCount = scores.filter((s) => s.meets_minimum).length;
   const totalPoints = scores.reduce((sum, s) => sum + s.total_points, 0);
+
+  const PIPELINE_LIMIT = 5;
+  const visiblePipeline = pipelineExpanded ? pipeline : pipeline.slice(0, PIPELINE_LIMIT);
+  const hasMorePipeline = pipeline.length > PIPELINE_LIMIT;
+
+  async function handlePipelineAction(id: string, status: "published" | "dropped") {
+    setUpdatingIds((prev) => new Set(prev).add(id));
+    setPipeline((prev) => prev.filter((item) => item.id !== id));
+    try {
+      const res = await fetch(`/api/content/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        console.error("Failed to update:", data.error);
+      }
+    } catch (error) {
+      console.error("Failed to update content:", error);
+    }
+    setUpdatingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
 
   // Topic coverage: count from published content + pipeline
   const allItems = [...content, ...pipeline];
@@ -157,10 +186,11 @@ export default function Home() {
                 </span>
               </div>
               <div className="bg-white rounded-2xl border border-[#E7E5E4] p-4 shadow-sm space-y-2">
-                {pipeline.map((item) => {
+                {visiblePipeline.map((item) => {
                   const statusConfig = item.status === "writing"
                     ? { label: "작성중", color: "bg-blue-100 text-blue-700" }
                     : { label: "소재", color: "bg-amber-100 text-amber-700" };
+                  const isUpdating = updatingIds.has(item.id);
                   return (
                     <div
                       key={item.id}
@@ -175,13 +205,60 @@ export default function Home() {
                         <span className="text-sm text-[#1C1917] truncate block font-medium">
                           {item.title}
                         </span>
-                        <span className="text-xs text-[#78716C]">
-                          {item.member}
-                        </span>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="text-xs text-[#78716C]">
+                            {item.member}
+                          </span>
+                          {item.channel && item.channel !== "other" && (
+                            <span className="text-[10px] text-[#A8A29E]">
+                              {CHANNEL_LABELS[item.channel as Channel] || item.channel}
+                            </span>
+                          )}
+                          {item.content_type && (
+                            <span className="text-[10px] text-[#A8A29E]">
+                              {CONTENT_TYPE_LABELS[item.content_type as ContentType]?.replace(/ \(\d+pt\)/, "") || item.content_type}
+                            </span>
+                          )}
+                          {item.target_date && (
+                            <span className="text-[10px] text-[#A8A29E]">
+                              ~{item.target_date}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-1.5 shrink-0">
+                        <button
+                          onClick={() => handlePipelineAction(item.id, "published")}
+                          disabled={isUpdating}
+                          className="px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-medium
+                                     hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                          title="발행 완료 처리"
+                        >
+                          완료
+                        </button>
+                        <button
+                          onClick={() => handlePipelineAction(item.id, "dropped")}
+                          disabled={isUpdating}
+                          className="px-2 py-1 rounded-md bg-red-50 text-red-600 text-[11px] font-medium
+                                     hover:bg-red-100 transition-colors disabled:opacity-50"
+                          title="폐기 처리"
+                        >
+                          폐기
+                        </button>
                       </div>
                     </div>
                   );
                 })}
+                {hasMorePipeline && (
+                  <button
+                    onClick={() => setPipelineExpanded(!pipelineExpanded)}
+                    className="w-full py-2 text-xs text-[#78716C] hover:text-[#44403C] transition-colors font-medium"
+                  >
+                    {pipelineExpanded
+                      ? "접기"
+                      : `더보기 (+${pipeline.length - PIPELINE_LIMIT}건)`}
+                  </button>
+                )}
               </div>
             </div>
           )}

@@ -49,6 +49,7 @@ function recordToContent(record: Airtable.Record<Airtable.FieldSet>): ContentIte
       if (Array.isArray(raw)) return raw as Topic[];
       return [raw] as Topic[];
     })(),
+    target_date: (record.get("target_date") as string) || undefined,
   };
 }
 
@@ -91,7 +92,7 @@ export async function getContentByDateRange(
 }
 
 export async function addContent(
-  data: Omit<ContentItem, "id" | "points" | "is_original" | "topic"> & { topic?: Topic[] }
+  data: Omit<ContentItem, "id" | "points" | "is_original" | "topic" | "target_date"> & { topic?: Topic[]; target_date?: string }
 ): Promise<ContentItem> {
   const status = data.status || "published";
   const points = status === "published" ? getPoints(data.content_type) : 0;
@@ -110,6 +111,7 @@ export async function addContent(
     is_original: is_original_flag,
     status,
     ...(data.topic && data.topic.length > 0 ? { topic: data.topic } : {}),
+    ...(data.target_date ? { target_date: data.target_date } : {}),
   });
 
   return recordToContent(record);
@@ -124,6 +126,14 @@ export async function getPipeline(): Promise<ContentItem[]> {
     .all();
 
   return records.map(recordToContent);
+}
+
+export async function updateContentStatus(
+  id: string,
+  status: ContentStatus
+): Promise<ContentItem> {
+  const record = await contentTable().update(id, { status });
+  return recordToContent(record);
 }
 
 export async function checkGhostIdExists(ghostId: string): Promise<boolean> {

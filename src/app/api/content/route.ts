@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { member, title, url, channel, content_type, published_at, status, topic } = body;
+    const { member, title, url, channel, content_type, published_at, status, topic, target_date } = body;
 
     const contentStatus = status || "published";
 
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       source: "manual_web",
       status: contentStatus,
       topic: Array.isArray(topic) ? topic : topic ? [topic] : undefined,
+      target_date: target_date || undefined,
     });
 
     return NextResponse.json({ item }, { status: 201 });

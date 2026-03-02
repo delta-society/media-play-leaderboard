@@ -32,6 +32,7 @@ export default function AddContentPage() {
     published_at: new Date().toISOString().split("T")[0],
     status: "published" as ContentStatus,
     topic: [] as Topic[],
+    target_date: "",
   });
 
   const isPublished = form.status === "published";
@@ -87,7 +88,10 @@ export default function AddContentPage() {
       const res = await fetch("/api/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          target_date: form.target_date || undefined,
+        }),
       });
 
       if (!res.ok) {
@@ -309,6 +313,24 @@ export default function AddContentPage() {
                        focus:outline-none focus:ring-2 focus:ring-[#C0F0FB]"
           />
         </div>
+
+        {/* Target Date (idea/writing only) */}
+        {!isPublished && (
+          <div>
+            <label className="block text-sm font-medium text-[#44403C] mb-1">
+              목표일
+            </label>
+            <input
+              type="date"
+              value={form.target_date}
+              onChange={(e) =>
+                setForm({ ...form, target_date: e.target.value })
+              }
+              className="w-full px-3 py-2 rounded-lg border border-[#E7E5E4] bg-white text-sm
+                         focus:outline-none focus:ring-2 focus:ring-[#C0F0FB]"
+            />
+          </div>
+        )}
 
         {/* Topic */}
         <div>
