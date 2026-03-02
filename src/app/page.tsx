@@ -198,9 +198,7 @@ export default function Home() {
               ) : (
                 <>
                   {visiblePipeline.map((item) => {
-                    const statusConfig = item.status === "writing"
-                      ? { label: "작성중", color: "bg-blue-100 text-blue-700" }
-                      : { label: "소재", color: "bg-amber-100 text-amber-700" };
+                    const statusConfig = { label: "소재", color: "bg-amber-100 text-amber-700" };
                     const isUpdating = updatingIds.has(item.id);
                     return (
                       <div

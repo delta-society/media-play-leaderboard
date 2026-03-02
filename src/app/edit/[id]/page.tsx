@@ -108,7 +108,7 @@ export default function EditContentPage() {
     );
   }
 
-  const isPipeline = form.status === "idea" || form.status === "writing";
+  const isPipeline = form.status === "idea";
 
   return (
     <div className="max-w-lg mx-auto">
@@ -117,27 +117,6 @@ export default function EditContentPage() {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Status tabs */}
-        <div className="flex gap-1 p-1 rounded-lg bg-[#F5F5F4]">
-          {([
-            { value: "idea", label: "소재" },
-            { value: "writing", label: "작성중" },
-          ] as { value: ContentStatus; label: string }[]).map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setForm({ ...form, status: opt.value })}
-              className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                form.status === opt.value
-                  ? "bg-white text-[#1C1917] shadow-sm"
-                  : "text-[#78716C] hover:text-[#44403C]"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
         {/* Title */}
         <div>
           <label className="block text-sm font-medium text-[#44403C] mb-1">

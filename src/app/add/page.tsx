@@ -174,7 +174,6 @@ export default function AddContentPage() {
         <div className="flex gap-1 p-1 rounded-lg bg-[#F5F5F4]">
           {([
             { value: "published", label: "발행 완료" },
-            { value: "writing", label: "작성중" },
             { value: "idea", label: "소재" },
           ] as { value: ContentStatus; label: string }[]).map((opt) => (
             <button
@@ -384,9 +383,7 @@ export default function AddContentPage() {
               ? "추가 중..."
               : isPublished
                 ? "콘텐츠 추가"
-                : form.status === "writing"
-                  ? "작성중 등록"
-                  : "소재 등록"}
+                : "소재 등록"}
           </button>
           <a
             href="/"

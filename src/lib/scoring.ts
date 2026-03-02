@@ -68,7 +68,7 @@ const SHORT_WEEKLY_CAP = 5;
 const WEEKLY_MINIMUM = 15;
 const YELLOW_CARD_THRESHOLD = 10;
 
-export type ContentStatus = "idea" | "writing" | "published" | "dropped";
+export type ContentStatus = "idea" | "published" | "dropped";
 
 export interface ContentItem {
   id: string;

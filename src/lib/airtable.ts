@@ -120,7 +120,7 @@ export async function addContent(
 export async function getPipeline(): Promise<ContentItem[]> {
   const records = await contentTable()
     .select({
-      filterByFormula: `OR({status}='idea', {status}='writing')`,
+      filterByFormula: `{status}='idea'`,
       sort: [{ field: "published_at", direction: "desc" }],
     })
     .all();
