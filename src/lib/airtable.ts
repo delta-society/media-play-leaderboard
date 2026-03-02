@@ -128,11 +128,39 @@ export async function getPipeline(): Promise<ContentItem[]> {
   return records.map(recordToContent);
 }
 
+export async function getContentById(id: string): Promise<ContentItem> {
+  const record = await contentTable().find(id);
+  return recordToContent(record);
+}
+
 export async function updateContentStatus(
   id: string,
   status: ContentStatus
 ): Promise<ContentItem> {
   const record = await contentTable().update(id, { status });
+  return recordToContent(record);
+}
+
+export async function updateContent(
+  id: string,
+  fields: {
+    title?: string;
+    channel?: Channel;
+    content_type?: ContentType;
+    status?: ContentStatus;
+    target_date?: string;
+    topic?: Topic[];
+  }
+): Promise<ContentItem> {
+  const airtableFields: Partial<Airtable.FieldSet> = {};
+  if (fields.title !== undefined) airtableFields.title = fields.title;
+  if (fields.channel !== undefined) airtableFields.channel = fields.channel;
+  if (fields.content_type !== undefined) airtableFields.content_type = fields.content_type;
+  if (fields.status !== undefined) airtableFields.status = fields.status;
+  if (fields.target_date !== undefined) airtableFields.target_date = fields.target_date || "";
+  if (fields.topic !== undefined) airtableFields.topic = fields.topic.length > 0 ? fields.topic : [];
+
+  const record = await contentTable().update(id, airtableFields);
   return recordToContent(record);
 }
 

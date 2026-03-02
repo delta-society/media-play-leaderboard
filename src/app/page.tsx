@@ -175,93 +175,105 @@ export default function Home() {
           </div>
 
           {/* Pipeline */}
-          {pipeline.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <h2 className="text-lg font-semibold text-[#1C1917] font-heading">
-                  파이프라인
-                </h2>
-                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
-                  {pipeline.length}
-                </span>
-              </div>
-              <div className="bg-white rounded-2xl border border-[#E7E5E4] p-4 shadow-sm space-y-2">
-                {visiblePipeline.map((item) => {
-                  const statusConfig = item.status === "writing"
-                    ? { label: "작성중", color: "bg-blue-100 text-blue-700" }
-                    : { label: "소재", color: "bg-amber-100 text-amber-700" };
-                  const isUpdating = updatingIds.has(item.id);
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F9F7F4] transition-colors"
-                    >
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${statusConfig.color}`}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-lg font-semibold text-[#1C1917] font-heading">
+                파이프라인
+              </h2>
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
+                {pipeline.length}
+              </span>
+            </div>
+            <div className="bg-white rounded-2xl border border-[#E7E5E4] p-4 shadow-sm space-y-2">
+              {pipeline.length === 0 ? (
+                <div className="py-6 text-center">
+                  <p className="text-sm text-[#A8A29E]">등록된 소재가 없습니다</p>
+                  <a
+                    href="/add"
+                    className="inline-block mt-2 text-xs text-[#78716C] hover:text-[#1C1917] underline underline-offset-2 transition-colors"
+                  >
+                    소재 등록하기
+                  </a>
+                </div>
+              ) : (
+                <>
+                  {visiblePipeline.map((item) => {
+                    const statusConfig = item.status === "writing"
+                      ? { label: "작성중", color: "bg-blue-100 text-blue-700" }
+                      : { label: "소재", color: "bg-amber-100 text-amber-700" };
+                    const isUpdating = updatingIds.has(item.id);
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F9F7F4] transition-colors"
                       >
-                        {statusConfig.label}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm text-[#1C1917] truncate block font-medium">
-                          {item.title}
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${statusConfig.color}`}
+                        >
+                          {statusConfig.label}
                         </span>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          <span className="text-xs text-[#78716C]">
-                            {item.member}
+                        <a href={`/edit/${item.id}`} className="flex-1 min-w-0 cursor-pointer">
+                          <span className="text-sm text-[#1C1917] truncate block font-medium hover:underline underline-offset-2">
+                            {item.title}
                           </span>
-                          {item.channel && item.channel !== "other" && (
-                            <span className="text-[10px] text-[#A8A29E]">
-                              {CHANNEL_LABELS[item.channel as Channel] || item.channel}
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <span className="text-xs text-[#78716C]">
+                              {item.member}
                             </span>
-                          )}
-                          {item.content_type && (
-                            <span className="text-[10px] text-[#A8A29E]">
-                              {CONTENT_TYPE_LABELS[item.content_type as ContentType]?.replace(/ \(\d+pt\)/, "") || item.content_type}
-                            </span>
-                          )}
-                          {item.target_date && (
-                            <span className="text-[10px] text-[#A8A29E]">
-                              ~{item.target_date}
-                            </span>
-                          )}
+                            {item.channel && item.channel !== "other" && (
+                              <span className="text-[10px] text-[#A8A29E]">
+                                {CHANNEL_LABELS[item.channel as Channel] || item.channel}
+                              </span>
+                            )}
+                            {item.content_type && (
+                              <span className="text-[10px] text-[#A8A29E]">
+                                {CONTENT_TYPE_LABELS[item.content_type as ContentType]?.replace(/ \(\d+pt\)/, "") || item.content_type}
+                              </span>
+                            )}
+                            {item.target_date && (
+                              <span className="text-[10px] text-[#A8A29E]">
+                                ~{item.target_date}
+                              </span>
+                            )}
+                          </div>
+                        </a>
+                        <div className="flex gap-1.5 shrink-0">
+                          <button
+                            onClick={() => handlePipelineAction(item.id, "published")}
+                            disabled={isUpdating}
+                            className="px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-medium
+                                       hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                            title="발행 완료 처리"
+                          >
+                            완료
+                          </button>
+                          <button
+                            onClick={() => handlePipelineAction(item.id, "dropped")}
+                            disabled={isUpdating}
+                            className="px-2 py-1 rounded-md bg-red-50 text-red-600 text-[11px] font-medium
+                                       hover:bg-red-100 transition-colors disabled:opacity-50"
+                            title="폐기 처리"
+                          >
+                            폐기
+                          </button>
                         </div>
                       </div>
-                      <div className="flex gap-1.5 shrink-0">
-                        <button
-                          onClick={() => handlePipelineAction(item.id, "published")}
-                          disabled={isUpdating}
-                          className="px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-medium
-                                     hover:bg-emerald-100 transition-colors disabled:opacity-50"
-                          title="발행 완료 처리"
-                        >
-                          완료
-                        </button>
-                        <button
-                          onClick={() => handlePipelineAction(item.id, "dropped")}
-                          disabled={isUpdating}
-                          className="px-2 py-1 rounded-md bg-red-50 text-red-600 text-[11px] font-medium
-                                     hover:bg-red-100 transition-colors disabled:opacity-50"
-                          title="폐기 처리"
-                        >
-                          폐기
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-                {hasMorePipeline && (
-                  <button
-                    onClick={() => setPipelineExpanded(!pipelineExpanded)}
-                    className="w-full py-2 text-xs text-[#78716C] hover:text-[#44403C] transition-colors font-medium"
-                  >
-                    {pipelineExpanded
-                      ? "접기"
-                      : `더보기 (+${pipeline.length - PIPELINE_LIMIT}건)`}
-                  </button>
-                )}
-              </div>
+                    );
+                  })}
+                  {hasMorePipeline && (
+                    <button
+                      onClick={() => setPipelineExpanded(!pipelineExpanded)}
+                      className="w-full py-2 text-xs text-[#78716C] hover:text-[#44403C] transition-colors font-medium"
+                    >
+                      {pipelineExpanded
+                        ? "접기"
+                        : `더보기 (+${pipeline.length - PIPELINE_LIMIT}건)`}
+                    </button>
+                  )}
+                </>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Topic coverage */}
           <div>

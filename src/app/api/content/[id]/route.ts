@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateContentStatus } from "@/lib/airtable";
+import { getContentById, updateContentStatus, updateContent } from "@/lib/airtable";
 import type { ContentStatus } from "@/lib/scoring";
 
-const ALLOWED_STATUSES: ContentStatus[] = ["published", "dropped"];
+const STATUS_TRANSITION: ContentStatus[] = ["published", "dropped"];
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const item = await getContentById(id);
+    return NextResponse.json({ item });
+  } catch (error) {
+    console.error("Failed to fetch content:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { error: `Failed to fetch content: ${message}` },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -11,16 +29,29 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+    const { title, channel, content_type, status, target_date, topic } = body;
 
-    if (!status || !ALLOWED_STATUSES.includes(status)) {
-      return NextResponse.json(
-        { error: `Invalid status. Allowed: ${ALLOWED_STATUSES.join(", ")}` },
-        { status: 400 }
-      );
+    // Simple status-only transition (published/dropped)
+    if (status && !title && !channel && !content_type && target_date === undefined && !topic) {
+      if (!STATUS_TRANSITION.includes(status)) {
+        return NextResponse.json(
+          { error: `Invalid status transition. Allowed: ${STATUS_TRANSITION.join(", ")}` },
+          { status: 400 }
+        );
+      }
+      const item = await updateContentStatus(id, status);
+      return NextResponse.json({ item });
     }
 
-    const item = await updateContentStatus(id, status);
+    // General field update
+    const item = await updateContent(id, {
+      ...(title !== undefined && { title }),
+      ...(channel !== undefined && { channel }),
+      ...(content_type !== undefined && { content_type }),
+      ...(status !== undefined && { status }),
+      ...(target_date !== undefined && { target_date }),
+      ...(topic !== undefined && { topic }),
+    });
     return NextResponse.json({ item });
   } catch (error) {
     console.error("Failed to update content:", error);
