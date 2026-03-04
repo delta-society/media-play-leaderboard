@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getContentById, updateContentStatus, updateContent } from "@/lib/airtable";
+import { getContentById, updateContentStatus, updateContent } from "@/lib/supabase";
 import type { ContentStatus } from "@/lib/scoring";
 
 const STATUS_TRANSITION: ContentStatus[] = ["published", "dropped"];

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPipeline } from "@/lib/airtable";
+import { getPipeline } from "@/lib/supabase";
 
 export async function GET() {
   try {

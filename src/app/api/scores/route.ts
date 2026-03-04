@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getContentByDateRange } from "@/lib/airtable";
+import { getContentByDateRange } from "@/lib/supabase";
 import {
   calculateWeeklyScore,
   getWeekDates,

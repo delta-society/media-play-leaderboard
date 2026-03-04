@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getContentByDateRange, addContent } from "@/lib/airtable";
+import { getContentByDateRange, addContent } from "@/lib/supabase";
 import { getWeekDates, getCurrentWeek, type ContentType, type Channel } from "@/lib/scoring";
 
 export async function GET(request: NextRequest) {
