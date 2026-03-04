@@ -3,7 +3,8 @@ export type ContentType =
   | "original_video"
   | "original_mid"
   | "short_video"
-  | "short";
+  | "short"
+  | "engagement";
 
 export type Channel =
   | "blog"
@@ -36,6 +37,7 @@ export const POINTS_MAP: Record<ContentType, number> = {
   original_mid: 3,
   short_video: 2,
   short: 1,
+  engagement: 1,
 };
 
 export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
@@ -44,6 +46,7 @@ export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   original_mid: "원본 중문 (3pt)",
   short_video: "숏폼 영상 (2pt)",
   short: "단문 (1pt)",
+  engagement: "engagement (1pt)",
 };
 
 export const CHANNEL_LABELS: Record<Channel, string> = {
@@ -61,7 +64,9 @@ export const ORIGINAL_TYPES: ContentType[] = [
 ];
 
 const SHORT_TYPES: ContentType[] = ["short"];
+const ENGAGEMENT_TYPES: ContentType[] = ["engagement"];
 const SHORT_WEEKLY_CAP = 5;
+const ENGAGEMENT_WEEKLY_CAP = 5;
 const WEEKLY_MINIMUM = 15;
 const YELLOW_CARD_THRESHOLD = 10;
 
@@ -111,6 +116,7 @@ export function calculateWeeklyScore(items: ContentItem[]): {
   unique_channels: number;
 } {
   let shortPoints = 0;
+  let engagementPoints = 0;
   let otherPoints = 0;
   let originalCount = 0;
   const channels = new Set<string>();
@@ -118,6 +124,8 @@ export function calculateWeeklyScore(items: ContentItem[]): {
   for (const item of items) {
     if (SHORT_TYPES.includes(item.content_type)) {
       shortPoints += item.points;
+    } else if (ENGAGEMENT_TYPES.includes(item.content_type)) {
+      engagementPoints += item.points;
     } else {
       otherPoints += item.points;
     }
@@ -127,10 +135,11 @@ export function calculateWeeklyScore(items: ContentItem[]): {
     channels.add(item.channel);
   }
 
-  // Apply short content cap (max 5pt from short posts per week)
+  // Apply caps (max 5pt each from short and engagement per week)
   const cappedShortPoints = Math.min(shortPoints, SHORT_WEEKLY_CAP);
-  const totalPoints = otherPoints + cappedShortPoints;
-  const rawPoints = otherPoints + shortPoints;
+  const cappedEngagementPoints = Math.min(engagementPoints, ENGAGEMENT_WEEKLY_CAP);
+  const totalPoints = otherPoints + cappedShortPoints + cappedEngagementPoints;
+  const rawPoints = otherPoints + shortPoints + engagementPoints;
 
   return {
     total_points: totalPoints,
