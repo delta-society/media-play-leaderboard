@@ -6,6 +6,7 @@ export interface Member {
   t1Channel: string;
   teams: string[];
   ghostBlogId?: string;
+  active: boolean;
 }
 
 export const MEMBERS: Member[] = [
@@ -17,6 +18,7 @@ export const MEMBERS: Member[] = [
     t1Channel: "blog",
     teams: ["Delta Society", "낭만투자파트너스"],
     ghostBlogId: "thefuturemundane",
+    active: true,
   },
   {
     id: "woong",
@@ -25,6 +27,7 @@ export const MEMBERS: Member[] = [
     avatar: "/avatars/woong.png",
     t1Channel: "blog",
     teams: ["Delta Society"],
+    active: true,
   },
   {
     id: "zoon",
@@ -34,6 +37,7 @@ export const MEMBERS: Member[] = [
     t1Channel: "podcast",
     teams: ["Delta Society", "낭만투자파트너스"],
     ghostBlogId: "re-builder",
+    active: true,
   },
   {
     id: "jae",
@@ -42,6 +46,7 @@ export const MEMBERS: Member[] = [
     avatar: "/avatars/jae.png",
     t1Channel: "blog",
     teams: ["낭만투자파트너스"],
+    active: false,
   },
   {
     id: "hoon",
@@ -50,8 +55,11 @@ export const MEMBERS: Member[] = [
     avatar: "/avatars/hoon.png",
     t1Channel: "blog",
     teams: ["낭만투자파트너스"],
+    active: false,
   },
 ];
+
+export const ACTIVE_MEMBERS = MEMBERS.filter((m) => m.active);
 
 export function getMember(id: string): Member | undefined {
   return MEMBERS.find((m) => m.id === id);

@@ -5,7 +5,7 @@ import {
   getWeekDates,
   getCurrentWeek,
 } from "@/lib/scoring";
-import { MEMBERS } from "@/lib/members";
+import { ACTIVE_MEMBERS } from "@/lib/members";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const endStr = end.toISOString().split("T")[0];
 
     const scores = await Promise.all(
-      MEMBERS.map(async (m) => {
+      ACTIVE_MEMBERS.map(async (m) => {
         const items = await getContentByDateRange(startStr, endStr, m.id);
         const score = calculateWeeklyScore(items);
         return {
