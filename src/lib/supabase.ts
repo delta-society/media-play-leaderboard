@@ -38,6 +38,7 @@ interface ContentRow {
   status: ContentStatus;
   topic: Topic[] | null;
   target_date: string | null;
+  source_meeting_id: string | null;
 }
 
 function rowToContent(row: ContentRow): ContentItem {
@@ -56,6 +57,7 @@ function rowToContent(row: ContentRow): ContentItem {
     status: row.status || "published",
     topic: row.topic && row.topic.length > 0 ? row.topic : undefined,
     target_date: row.target_date || undefined,
+    source_meeting_id: row.source_meeting_id || undefined,
   };
 }
 
@@ -135,9 +137,10 @@ export async function getContentByDateRange(
 }
 
 export async function addContent(
-  data: Omit<ContentItem, "id" | "points" | "is_original" | "topic" | "target_date"> & {
+  data: Omit<ContentItem, "id" | "points" | "is_original" | "topic" | "target_date" | "source_meeting_id"> & {
     topic?: Topic[];
     target_date?: string;
+    source_meeting_id?: string;
   }
 ): Promise<ContentItem> {
   const status = data.status || "published";
@@ -162,6 +165,7 @@ export async function addContent(
       status,
       topic: data.topic && data.topic.length > 0 ? data.topic : [],
       target_date: data.target_date || null,
+      source_meeting_id: data.source_meeting_id || null,
     })
     .select()
     .single();

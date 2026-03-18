@@ -81,12 +81,13 @@ export interface ContentItem {
   content_type: ContentType;
   points: number;
   published_at: string;
-  source: "ghost_auto" | "manual_web" | "manual_claude";
+  source: "ghost_auto" | "manual_web" | "manual_claude" | "meeting_develop";
   ghost_id?: string;
   is_original: boolean;
   status: ContentStatus;
   topic?: Topic[];
   target_date?: string;
+  source_meeting_id?: string;
 }
 
 export interface WeeklyScore {
