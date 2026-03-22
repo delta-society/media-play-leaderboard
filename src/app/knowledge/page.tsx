@@ -28,6 +28,7 @@ export default function KnowledgePage() {
   const [topicFilter, setTopicFilter] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [extractingId, setExtractingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "members">("members");
 
   useEffect(() => {
     fetchData();
@@ -134,8 +135,31 @@ export default function KnowledgePage() {
         )}
       </div>
 
-      {/* Stats bar */}
+      {/* View toggle + Stats bar */}
       <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-[#1C1917] text-white text-sm">
+        <div className="flex items-center gap-1 mr-2">
+          <button
+            onClick={() => setViewMode("members")}
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+              viewMode === "members"
+                ? "bg-white/15 text-white"
+                : "text-white/40 hover:text-white/70"
+            }`}
+          >
+            멤버별
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+              viewMode === "list"
+                ? "bg-white/15 text-white"
+                : "text-white/40 hover:text-white/70"
+            }`}
+          >
+            전체 목록
+          </button>
+        </div>
+        <div className="w-px h-4 bg-white/10" />
         <span>
           <span className="text-[#A8A29E] text-xs mr-1.5">전체</span>
           <span className="font-bold font-heading">{stats.total}</span>
@@ -208,7 +232,7 @@ export default function KnowledgePage() {
         </select>
       </div>
 
-      {/* Content list */}
+      {/* Content */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 gap-3">
           <div className="w-10 h-10 border-3 border-[#C0F0FB] border-t-transparent rounded-full animate-spin" />
@@ -220,7 +244,173 @@ export default function KnowledgePage() {
             {search ? "검색 결과가 없습니다" : "발행된 콘텐츠가 없습니다"}
           </p>
         </div>
+      ) : viewMode === "members" ? (
+        /* ===== MEMBER VIEW ===== */
+        <div className="space-y-8">
+          {ACTIVE_MEMBERS.map((m) => {
+            const memberItems = filteredItems.filter((i) => i.member === m.id);
+            if (memberItems.length === 0) return null;
+            const extractedCount = memberItems.filter((i) => i.extracted_at).length;
+            const recentItems = memberItems.slice(0, 5);
+
+            return (
+              <div key={m.id}>
+                {/* Member header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#C0F0FB] to-[#7DD3FC] flex items-center justify-center text-[#1C1917] text-sm font-bold font-heading">
+                    {m.displayName[0]}
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#1C1917] font-heading">
+                      {m.displayName}
+                    </h2>
+                    <div className="flex items-center gap-2 text-[11px] text-[#78716C]">
+                      <span>{memberItems.length}건</span>
+                      <span>·</span>
+                      <span className="text-emerald-600">{extractedCount} 추출</span>
+                      {memberItems.length > extractedCount && (
+                        <>
+                          <span>·</span>
+                          <span className="text-amber-600">
+                            {memberItems.length - extractedCount} 미추출
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Member content cards */}
+                <div className="space-y-2">
+                  {recentItems.map((item) => {
+                    const isExpanded = expandedId === item.id;
+                    const hasExtraction = !!item.extracted_at;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="bg-white rounded-xl border border-[#E7E5E4] shadow-sm overflow-hidden"
+                      >
+                        <button
+                          onClick={() =>
+                            setExpandedId(isExpanded ? null : item.id)
+                          }
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#F9F7F4] transition-colors text-left"
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              hasExtraction ? "bg-emerald-400" : "bg-amber-400"
+                            }`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-[#1C1917] truncate">
+                              {item.title}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="text-[10px] text-[#A8A29E]">
+                                {CHANNEL_LABELS[item.channel] || item.channel}
+                              </span>
+                              <span className="text-[10px] text-[#A8A29E]">
+                                {item.published_at}
+                              </span>
+                              {item.topic?.map((t) => (
+                                <span
+                                  key={t}
+                                  className="px-1.5 py-0.5 rounded text-[9px] bg-[#C0F0FB]/30 text-[#1C1917]"
+                                >
+                                  {TOPIC_LABELS[t]}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <span className="text-[#A8A29E] text-xs shrink-0">
+                            {isExpanded ? "▲" : "▼"}
+                          </span>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="px-4 pb-4 border-t border-[#E7E5E4]">
+                            {hasExtraction ? (
+                              <div className="pt-3 space-y-3">
+                                {item.summary && (
+                                  <div>
+                                    <h4 className="text-[10px] font-bold text-[#A8A29E] uppercase tracking-wider mb-1">
+                                      요약
+                                    </h4>
+                                    <p className="text-sm text-[#44403C] leading-relaxed">
+                                      {item.summary}
+                                    </p>
+                                  </div>
+                                )}
+                                {item.key_claims &&
+                                  item.key_claims.length > 0 && (
+                                    <div>
+                                      <h4 className="text-[10px] font-bold text-[#A8A29E] uppercase tracking-wider mb-1">
+                                        핵심 주장
+                                      </h4>
+                                      <ul className="space-y-1">
+                                        {item.key_claims.map((claim, i) => (
+                                          <li
+                                            key={i}
+                                            className="text-sm text-[#44403C] pl-3 border-l-2 border-[#C0F0FB]"
+                                          >
+                                            {claim}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                {item.url && (
+                                  <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block text-xs text-[#78716C] hover:text-[#1C1917] underline underline-offset-2"
+                                  >
+                                    원문 보기 →
+                                  </a>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="pt-3 flex items-center gap-3">
+                                <p className="text-sm text-[#A8A29E]">
+                                  아직 추출되지 않은 콘텐츠입니다
+                                </p>
+                                <button
+                                  onClick={() => handleExtract(item.id)}
+                                  disabled={extractingId === item.id}
+                                  className="px-3 py-1.5 rounded-lg bg-[#C0F0FB] text-[#1C1917] text-xs font-semibold
+                                             hover:bg-[#7DD3FC] transition-colors disabled:opacity-50"
+                                >
+                                  {extractingId === item.id
+                                    ? "추출 중..."
+                                    : "추출하기"}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {memberItems.length > 5 && (
+                    <button
+                      onClick={() => {
+                        setMemberFilter(m.id);
+                        setViewMode("list");
+                      }}
+                      className="w-full py-2 text-xs text-[#78716C] hover:text-[#44403C] transition-colors font-medium"
+                    >
+                      +{memberItems.length - 5}건 더보기
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
+        /* ===== LIST VIEW ===== */
         <div className="space-y-2">
           {filteredItems.map((item) => {
             const member = getMember(item.member);
@@ -232,20 +422,16 @@ export default function KnowledgePage() {
                 key={item.id}
                 className="bg-white rounded-2xl border border-[#E7E5E4] shadow-sm overflow-hidden"
               >
-                {/* Row header */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : item.id)}
                   className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#F9F7F4] transition-colors text-left"
                 >
-                  {/* Extraction status */}
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${
                       hasExtraction ? "bg-emerald-400" : "bg-amber-400"
                     }`}
                     title={hasExtraction ? "추출 완료" : "미추출"}
                   />
-
-                  {/* Title + meta */}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-[#1C1917] truncate">
                       {item.title}
@@ -276,19 +462,15 @@ export default function KnowledgePage() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Expand indicator */}
                   <span className="text-[#A8A29E] text-xs shrink-0">
                     {isExpanded ? "▲" : "▼"}
                   </span>
                 </button>
 
-                {/* Expanded detail */}
                 {isExpanded && (
                   <div className="px-4 pb-4 border-t border-[#E7E5E4]">
                     {hasExtraction ? (
                       <div className="pt-3 space-y-3">
-                        {/* Summary */}
                         {item.summary && (
                           <div>
                             <h4 className="text-[10px] font-bold text-[#A8A29E] uppercase tracking-wider mb-1">
@@ -299,8 +481,6 @@ export default function KnowledgePage() {
                             </p>
                           </div>
                         )}
-
-                        {/* Key claims */}
                         {item.key_claims && item.key_claims.length > 0 && (
                           <div>
                             <h4 className="text-[10px] font-bold text-[#A8A29E] uppercase tracking-wider mb-1">
@@ -318,8 +498,6 @@ export default function KnowledgePage() {
                             </ul>
                           </div>
                         )}
-
-                        {/* Link */}
                         {item.url && (
                           <a
                             href={item.url}
