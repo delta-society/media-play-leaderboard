@@ -20,7 +20,9 @@ interface Stats {
 
 interface Suggestion {
   type: "unfurled" | "emotion" | "data";
-  text: string;
+  topic: string;
+  detail: string;
+  reason: string;
   source_title: string;
 }
 
@@ -337,15 +339,17 @@ export default function KnowledgePage() {
                     <h3 className="text-[10px] font-bold text-[#92400E] uppercase tracking-wider mb-2">
                       다음 글감 제안
                     </h3>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       {insights[m.id].suggestions.map((s, i) => (
                         <div key={i} className="flex items-start gap-2">
-                          <span className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-medium ${SUGGESTION_TYPE_CONFIG[s.type].color}`}>
+                          <span className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-medium mt-0.5 ${SUGGESTION_TYPE_CONFIG[s.type].color}`}>
                             {SUGGESTION_TYPE_CONFIG[s.type].label}
                           </span>
                           <div className="min-w-0">
-                            <p className="text-xs text-[#44403C] leading-relaxed">{s.text}</p>
-                            <p className="text-[10px] text-[#A8A29E] mt-0.5">← {s.source_title}</p>
+                            <p className="text-xs font-semibold text-[#1C1917]">{s.topic}</p>
+                            <p className="text-[11px] text-[#44403C] leading-relaxed mt-0.5">{s.detail}</p>
+                            <p className="text-[10px] text-[#78716C] mt-0.5">사유: {s.reason}</p>
+                            <p className="text-[9px] text-[#A8A29E] mt-0.5">← {s.source_title}</p>
                           </div>
                         </div>
                       ))}
