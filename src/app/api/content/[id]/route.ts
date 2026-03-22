@@ -29,10 +29,10 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, channel, content_type, status, target_date, topic } = body;
+    const { title, channel, content_type, status, target_date, topic, source_meeting_id } = body;
 
     // Simple status-only transition (published/dropped)
-    if (status && !title && !channel && !content_type && target_date === undefined && !topic) {
+    if (status && !title && !channel && !content_type && target_date === undefined && !topic && source_meeting_id === undefined) {
       if (!STATUS_TRANSITION.includes(status)) {
         return NextResponse.json(
           { error: `Invalid status transition. Allowed: ${STATUS_TRANSITION.join(", ")}` },
@@ -51,6 +51,7 @@ export async function PATCH(
       ...(status !== undefined && { status }),
       ...(target_date !== undefined && { target_date }),
       ...(topic !== undefined && { topic }),
+      ...(source_meeting_id !== undefined && { source_meeting_id }),
     });
     return NextResponse.json({ item });
   } catch (error) {

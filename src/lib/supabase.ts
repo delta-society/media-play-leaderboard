@@ -231,6 +231,7 @@ export async function updateContent(
     status?: ContentStatus;
     target_date?: string;
     topic?: Topic[];
+    source_meeting_id?: string;
   }
 ): Promise<ContentItem> {
   const updateFields: Record<string, unknown> = {};
@@ -243,6 +244,8 @@ export async function updateContent(
     updateFields.target_date = fields.target_date || null;
   if (fields.topic !== undefined)
     updateFields.topic = fields.topic.length > 0 ? fields.topic : [];
+  if (fields.source_meeting_id !== undefined)
+    updateFields.source_meeting_id = fields.source_meeting_id || null;
 
   const supabase = getClient();
   const { data, error } = await supabase
