@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MEMBERS } from "@/lib/members";
+import { ACTIVE_MEMBERS } from "@/lib/members";
 import {
   CONTENT_TYPE_LABELS,
   CHANNEL_LABELS,
@@ -204,7 +204,7 @@ export default function AddContentPage() {
                        focus:outline-none focus:ring-2 focus:ring-[#C0F0FB]"
           >
             <option value="">선택...</option>
-            {MEMBERS.map((m) => (
+            {ACTIVE_MEMBERS.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.displayName} (@{m.id})
               </option>
