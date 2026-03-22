@@ -98,6 +98,21 @@ export default function KnowledgePage() {
     setExtractingId(null);
   }
 
+  const EXTRACTABLE_CHANNELS = ["blog", "linkedin", "podcast"];
+
+  function getExtractionStatus(item: ContentItem): "extracted" | "pending" | "unavailable" {
+    if (item.extracted_at) return "extracted";
+    if (!EXTRACTABLE_CHANNELS.includes(item.channel)) return "unavailable";
+    if (!item.url) return "unavailable";
+    return "pending";
+  }
+
+  const STATUS_CONFIG = {
+    extracted: { dot: "bg-emerald-400", label: "추출 완료" },
+    pending: { dot: "bg-amber-400", label: "추출 가능" },
+    unavailable: { dot: "bg-[#D6D3D1]", label: "추출 불가" },
+  };
+
   const filteredItems = search
     ? items.filter(
         (item) =>
@@ -171,9 +186,15 @@ export default function KnowledgePage() {
           </span>
         </span>
         <span>
-          <span className="text-[#A8A29E] text-xs mr-1.5">미추출</span>
+          <span className="text-[#A8A29E] text-xs mr-1.5">추출 가능</span>
           <span className="font-bold font-heading text-amber-400">
-            {stats.pending}
+            {items.filter((i) => getExtractionStatus(i) === "pending").length}
+          </span>
+        </span>
+        <span>
+          <span className="text-[#A8A29E] text-xs mr-1.5">추출 불가</span>
+          <span className="font-bold font-heading text-[#A8A29E]">
+            {items.filter((i) => getExtractionStatus(i) === "unavailable").length}
           </span>
         </span>
       </div>
@@ -250,7 +271,10 @@ export default function KnowledgePage() {
           {ACTIVE_MEMBERS.map((m) => {
             const memberItems = filteredItems.filter((i) => i.member === m.id);
             if (memberItems.length === 0) return null;
-            const extractedCount = memberItems.filter((i) => i.extracted_at).length;
+            const memberStatuses = memberItems.map(getExtractionStatus);
+            const mExtracted = memberStatuses.filter((s) => s === "extracted").length;
+            const mPending = memberStatuses.filter((s) => s === "pending").length;
+            const mUnavailable = memberStatuses.filter((s) => s === "unavailable").length;
             const recentItems = memberItems.slice(0, 5);
 
             return (
@@ -266,14 +290,22 @@ export default function KnowledgePage() {
                     </h2>
                     <div className="flex items-center gap-2 text-[11px] text-[#78716C]">
                       <span>{memberItems.length}건</span>
-                      <span>·</span>
-                      <span className="text-emerald-600">{extractedCount} 추출</span>
-                      {memberItems.length > extractedCount && (
+                      {mExtracted > 0 && (
                         <>
                           <span>·</span>
-                          <span className="text-amber-600">
-                            {memberItems.length - extractedCount} 미추출
-                          </span>
+                          <span className="text-emerald-600">{mExtracted} 추출</span>
+                        </>
+                      )}
+                      {mPending > 0 && (
+                        <>
+                          <span>·</span>
+                          <span className="text-amber-600">{mPending} 대기</span>
+                        </>
+                      )}
+                      {mUnavailable > 0 && (
+                        <>
+                          <span>·</span>
+                          <span className="text-[#A8A29E]">{mUnavailable} 불가</span>
                         </>
                       )}
                     </div>
@@ -284,7 +316,8 @@ export default function KnowledgePage() {
                 <div className="space-y-2">
                   {recentItems.map((item) => {
                     const isExpanded = expandedId === item.id;
-                    const hasExtraction = !!item.extracted_at;
+                    const itemStatus = getExtractionStatus(item);
+                    const sc = STATUS_CONFIG[itemStatus];
 
                     return (
                       <div
@@ -298,9 +331,8 @@ export default function KnowledgePage() {
                           className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#F9F7F4] transition-colors text-left"
                         >
                           <span
-                            className={`w-2 h-2 rounded-full shrink-0 ${
-                              hasExtraction ? "bg-emerald-400" : "bg-amber-400"
-                            }`}
+                            className={`w-2 h-2 rounded-full shrink-0 ${sc.dot}`}
+                            title={sc.label}
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-[#1C1917] truncate">
@@ -330,7 +362,7 @@ export default function KnowledgePage() {
 
                         {isExpanded && (
                           <div className="px-4 pb-4 border-t border-[#E7E5E4]">
-                            {hasExtraction ? (
+                            {itemStatus === "extracted" ? (
                               <div className="pt-3 space-y-3">
                                 {item.summary && (
                                   <div>
@@ -371,10 +403,10 @@ export default function KnowledgePage() {
                                   </a>
                                 )}
                               </div>
-                            ) : (
+                            ) : itemStatus === "pending" ? (
                               <div className="pt-3 flex items-center gap-3">
                                 <p className="text-sm text-[#A8A29E]">
-                                  아직 추출되지 않은 콘텐츠입니다
+                                  추출 가능한 콘텐츠입니다
                                 </p>
                                 <button
                                   onClick={() => handleExtract(item.id)}
@@ -386,6 +418,22 @@ export default function KnowledgePage() {
                                     ? "추출 중..."
                                     : "추출하기"}
                                 </button>
+                              </div>
+                            ) : (
+                              <div className="pt-3 flex items-center gap-3">
+                                <p className="text-sm text-[#A8A29E]">
+                                  {!item.url ? "URL 없음 — 추출 불가" : `${CHANNEL_LABELS[item.channel] || item.channel} 채널은 자동 추출 미지원`}
+                                </p>
+                                {item.url && (
+                                  <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-[#78716C] hover:text-[#1C1917] underline underline-offset-2"
+                                  >
+                                    원문 보기 →
+                                  </a>
+                                )}
                               </div>
                             )}
                           </div>
@@ -415,7 +463,8 @@ export default function KnowledgePage() {
           {filteredItems.map((item) => {
             const member = getMember(item.member);
             const isExpanded = expandedId === item.id;
-            const hasExtraction = !!item.extracted_at;
+            const itemStatus = getExtractionStatus(item);
+            const sc = STATUS_CONFIG[itemStatus];
 
             return (
               <div
@@ -427,10 +476,8 @@ export default function KnowledgePage() {
                   className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#F9F7F4] transition-colors text-left"
                 >
                   <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      hasExtraction ? "bg-emerald-400" : "bg-amber-400"
-                    }`}
-                    title={hasExtraction ? "추출 완료" : "미추출"}
+                    className={`w-2 h-2 rounded-full shrink-0 ${sc.dot}`}
+                    title={sc.label}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-[#1C1917] truncate">
@@ -469,7 +516,7 @@ export default function KnowledgePage() {
 
                 {isExpanded && (
                   <div className="px-4 pb-4 border-t border-[#E7E5E4]">
-                    {hasExtraction ? (
+                    {itemStatus === "extracted" ? (
                       <div className="pt-3 space-y-3">
                         {item.summary && (
                           <div>
@@ -509,10 +556,10 @@ export default function KnowledgePage() {
                           </a>
                         )}
                       </div>
-                    ) : (
+                    ) : itemStatus === "pending" ? (
                       <div className="pt-3 flex items-center gap-3">
                         <p className="text-sm text-[#A8A29E]">
-                          아직 추출되지 않은 콘텐츠입니다
+                          추출 가능한 콘텐츠입니다
                         </p>
                         <button
                           onClick={() => handleExtract(item.id)}
@@ -522,6 +569,22 @@ export default function KnowledgePage() {
                         >
                           {extractingId === item.id ? "추출 중..." : "추출하기"}
                         </button>
+                      </div>
+                    ) : (
+                      <div className="pt-3 flex items-center gap-3">
+                        <p className="text-sm text-[#A8A29E]">
+                          {!item.url ? "URL 없음 — 추출 불가" : `${CHANNEL_LABELS[item.channel] || item.channel} 채널은 자동 추출 미지원`}
+                        </p>
+                        {item.url && (
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-[#78716C] hover:text-[#1C1917] underline underline-offset-2"
+                          >
+                            원문 보기 →
+                          </a>
+                        )}
                       </div>
                     )}
                   </div>
