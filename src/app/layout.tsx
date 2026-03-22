@@ -49,6 +49,12 @@ export default function RootLayout({
                 Leaderboard
               </a>
               <a
+                href="/knowledge"
+                className="text-white/70 hover:text-[#C0F0FB] transition-colors text-xs"
+              >
+                Knowledge
+              </a>
+              <a
                 href="/add"
                 className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#C0F0FB] to-[#7DD3FC] text-[#1C1917] font-semibold
                            hover:from-[#FFEA00] hover:to-[#FCD34D] transition-all text-xs shadow-sm"

@@ -295,6 +295,33 @@ export async function getUnextractedContent(): Promise<ContentItem[]> {
   return (data || []).map(rowToContent);
 }
 
+export async function getAllPublishedContent(options?: {
+  member?: string;
+  channel?: string;
+  topic?: string;
+  search?: string;
+}): Promise<ContentItem[]> {
+  const supabase = getClient();
+  let query = supabase
+    .from("content_log")
+    .select("*")
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  if (options?.member) query = query.eq("member", options.member);
+  if (options?.channel) query = query.eq("channel", options.channel);
+  if (options?.topic) query = query.contains("topic", [options.topic]);
+  if (options?.search) {
+    query = query.or(
+      `title.ilike.%${options.search}%,summary.ilike.%${options.search}%`
+    );
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(rowToContent);
+}
+
 export async function checkGhostIdExists(ghostId: string): Promise<boolean> {
   const supabase = getClient();
   const { data, error } = await supabase
