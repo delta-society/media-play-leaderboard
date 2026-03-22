@@ -88,6 +88,10 @@ export interface ContentItem {
   topic?: Topic[];
   target_date?: string;
   source_meeting_id?: string;
+  full_text?: string;
+  summary?: string;
+  key_claims?: string[];
+  extracted_at?: string;
 }
 
 export interface WeeklyScore {

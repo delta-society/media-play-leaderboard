@@ -39,6 +39,10 @@ interface ContentRow {
   topic: Topic[] | null;
   target_date: string | null;
   source_meeting_id: string | null;
+  full_text: string | null;
+  summary: string | null;
+  key_claims: string[] | null;
+  extracted_at: string | null;
 }
 
 function rowToContent(row: ContentRow): ContentItem {
@@ -58,6 +62,10 @@ function rowToContent(row: ContentRow): ContentItem {
     topic: row.topic && row.topic.length > 0 ? row.topic : undefined,
     target_date: row.target_date || undefined,
     source_meeting_id: row.source_meeting_id || undefined,
+    full_text: row.full_text || undefined,
+    summary: row.summary || undefined,
+    key_claims: row.key_claims && row.key_claims.length > 0 ? row.key_claims : undefined,
+    extracted_at: row.extracted_at || undefined,
   };
 }
 
@@ -246,6 +254,45 @@ export async function updateContent(
 
   if (error) throw error;
   return rowToContent(data);
+}
+
+export async function updateExtraction(
+  id: string,
+  fields: {
+    full_text: string;
+    summary: string;
+    key_claims: string[];
+  }
+): Promise<ContentItem> {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("content_log")
+    .update({
+      full_text: fields.full_text,
+      summary: fields.summary,
+      key_claims: fields.key_claims,
+      extracted_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return rowToContent(data);
+}
+
+export async function getUnextractedContent(): Promise<ContentItem[]> {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("content_log")
+    .select("*")
+    .eq("status", "published")
+    .is("full_text", null)
+    .in("channel", ["blog", "linkedin", "podcast"])
+    .order("published_at", { ascending: false });
+
+  if (error) throw error;
+  return (data || []).map(rowToContent);
 }
 
 export async function checkGhostIdExists(ghostId: string): Promise<boolean> {

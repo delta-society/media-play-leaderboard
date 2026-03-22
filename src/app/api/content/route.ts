@@ -63,6 +63,20 @@ export async function POST(request: NextRequest) {
       source_meeting_id: source_meeting_id || undefined,
     });
 
+    // Trigger async extraction for published blog/linkedin/podcast content
+    if (
+      item.status === "published" &&
+      item.url &&
+      ["blog", "linkedin", "podcast"].includes(item.channel)
+    ) {
+      const extractUrl = new URL("/api/extract", request.url);
+      fetch(extractUrl.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item.id }),
+      }).catch(() => {}); // fire-and-forget
+    }
+
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
     console.error("Failed to add content:", error);
