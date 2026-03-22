@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllPublishedContent } from "@/lib/supabase";
+import { getAllPublishedContent, getMemberInsights } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -9,10 +9,24 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("q") || undefined;
 
   try {
-    const items = await getAllPublishedContent({ member, channel, topic, search });
+    const [items, insights] = await Promise.all([
+      getAllPublishedContent({ member, channel, topic, search }),
+      getMemberInsights(member),
+    ]);
     const extracted = items.filter((i) => i.extracted_at);
+
+    // Build insights map: member -> suggestions
+    const insightsMap: Record<string, { suggestions: typeof insights[0]["suggestions"]; generated_at: string }> = {};
+    for (const ins of insights) {
+      insightsMap[ins.member] = {
+        suggestions: ins.suggestions,
+        generated_at: ins.generated_at,
+      };
+    }
+
     return NextResponse.json({
       items,
+      insights: insightsMap,
       stats: {
         total: items.length,
         extracted: extracted.length,

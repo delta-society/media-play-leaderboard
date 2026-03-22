@@ -18,9 +18,27 @@ interface Stats {
   pending: number;
 }
 
+interface Suggestion {
+  type: "unfurled" | "emotion" | "data";
+  text: string;
+  source_title: string;
+}
+
+interface InsightsData {
+  suggestions: Suggestion[];
+  generated_at: string;
+}
+
+const SUGGESTION_TYPE_CONFIG = {
+  unfurled: { label: "미전개", color: "text-blue-600 bg-blue-50" },
+  emotion: { label: "경험/감정", color: "text-amber-700 bg-amber-50" },
+  data: { label: "데이터", color: "text-emerald-700 bg-emerald-50" },
+};
+
 export default function KnowledgePage() {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, extracted: 0, pending: 0 });
+  const [insights, setInsights] = useState<Record<string, InsightsData>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [memberFilter, setMemberFilter] = useState("");
@@ -48,6 +66,7 @@ export default function KnowledgePage() {
         const data = await res.json();
         setItems(data.items);
         setStats(data.stats);
+        if (data.insights) setInsights(data.insights);
       }
     } catch (error) {
       console.error("Failed to fetch:", error);
@@ -311,6 +330,31 @@ export default function KnowledgePage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Member insights */}
+                {insights[m.id] && insights[m.id].suggestions.length > 0 && (
+                  <div className="mb-3 p-3 rounded-xl bg-gradient-to-r from-[#FFFBEB] to-[#FEF3C7] border border-[#FDE68A]/50">
+                    <h3 className="text-[10px] font-bold text-[#92400E] uppercase tracking-wider mb-2">
+                      다음 글감 제안
+                    </h3>
+                    <div className="space-y-1.5">
+                      {insights[m.id].suggestions.map((s, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-medium ${SUGGESTION_TYPE_CONFIG[s.type].color}`}>
+                            {SUGGESTION_TYPE_CONFIG[s.type].label}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs text-[#44403C] leading-relaxed">{s.text}</p>
+                            <p className="text-[10px] text-[#A8A29E] mt-0.5">← {s.source_title}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-[#A8A29E] mt-2">
+                      {new Date(insights[m.id].generated_at).toLocaleDateString("ko-KR")} 분석
+                    </p>
+                  </div>
+                )}
 
                 {/* Member content cards */}
                 <div className="space-y-2">

@@ -325,6 +325,49 @@ export async function getAllPublishedContent(options?: {
   return (data || []).map(rowToContent);
 }
 
+// --- MemberInsights ---
+
+export interface MemberInsight {
+  member: string;
+  suggestions: {
+    type: "unfurled" | "emotion" | "data";
+    text: string;
+    source_title: string;
+  }[];
+  generated_at: string;
+}
+
+export async function getMemberInsights(member?: string): Promise<MemberInsight[]> {
+  const supabase = getClient();
+  let query = supabase.from("member_insights").select("*");
+  if (member) query = query.eq("member", member);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []) as MemberInsight[];
+}
+
+export async function upsertMemberInsights(
+  member: string,
+  suggestions: MemberInsight["suggestions"]
+): Promise<MemberInsight> {
+  const supabase = getClient();
+  const { data, error } = await supabase
+    .from("member_insights")
+    .upsert(
+      {
+        member,
+        suggestions,
+        generated_at: new Date().toISOString(),
+      },
+      { onConflict: "member" }
+    )
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as MemberInsight;
+}
+
 export async function checkGhostIdExists(ghostId: string): Promise<boolean> {
   const supabase = getClient();
   const { data, error } = await supabase
